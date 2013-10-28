@@ -23,47 +23,52 @@ lam = 0.000860
 
 def wR2q(w, R):
     """
-    q = wR2q(w, R)
+    q = wR2q(w, R, n=1)
     --------------
     Get the q-parameter from a given spot size and radius of curvature.
+    n is the medium's refractive index.
     """
-    return 1/(1/R - 1j * lam / (pi * w**2))
+    return 1/(1/R - 1j * lam/n / (pi * w**2))
     
     
-def w02q(w0):
+def w02q(w0, n=1):
     """
-    q = w02q(w0)
+    q = w02q(w0, n=1)
     ------------
     Get the q-parameter at a waist point from the waist size.
+    n is the medium's refractive index.
     """
-    return 1j * pi * w0**2 / lam
+    return 1j * pi * w0**2 / (lam/n)
 
 
-def q2w(q):
+def q2w(q, n=1):
     """
-    w = q2w(q)
+    w = q2w(q, n=1)
     ----------
     Get the spot size from a given q-parameter.
+    n is the medium's refractive index.
     """
-    return np.sqrt(-lam / (pi * np.imag(1 / q)))
+    return np.sqrt(-lam/n / (pi * np.imag(1 / q)))
 
 
-def q2w0(q):
+def q2w0(q, n=1):
     """
-    w0 = q2w0(q)
+    w0 = q2w0(q, n=1)
     ------------
     Get the waist size from a given q-parameter.
+    n is the medium's refractive index.
     """
-    return np.sqrt(np.imag(q) * lam / pi)
+    return np.sqrt(np.imag(q) * lam/n / pi)
     
     
 def q2div(q):
     """
-    div = q2div(q)
+    div = q2div(q, n=1)
     --------------
     Get the far-field beam divergence for a given q-parameter.
+    n is the medium's refractive index.
     """
-    return lam / (pi * q2w0(q))
+    return lam/n / (pi * q2w0(q))
     
     
 def qABCD(q, M):
