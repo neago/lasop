@@ -11,6 +11,7 @@ All lengths are in units of mm.
 
 import numpy as np
 from numpy import pi, conj
+from __future__ import division
 
 # set wavelength to 860 nm
 lam = 0.000860
@@ -118,7 +119,7 @@ def Mprop(d):
     ------------
     ABCD matrix for free space propagation of distance d.
     """
-    return np.matrix([[1, float(d)], [0, 1]])
+    return np.matrix([[1, d], [0, 1]])
 
 def Minterface(n0, n1, R='inf'):
     """
@@ -127,8 +128,9 @@ def Minterface(n0, n1, R='inf'):
     ABCD matrix for the refraction at an interface (with radius of curvature R) 
     from a medium with refractive index n0 to a medium with refractive index n1.
     If no R is given, R=infinite i.e. flat surface is assumed.
+    R>0 means convex interface.
     """
-    return np.matrix([[1, 0], [0, float(n0)/float(n1)]])
+    return np.matrix([[1, 0], [(n0-n1)/(R*n1), n0/n1]])
 
 def Mlens(f):
     """
@@ -136,7 +138,7 @@ def Mlens(f):
     ------------
     ABCD matrix for a thin lens of focal length f.
     """
-    return np.matrix([[1, 0], [-1/float(f), 1]])
+    return np.matrix([[1, 0], [-1/f, 1]])
     
 def Mmirror(R):
     """
@@ -145,7 +147,7 @@ def Mmirror(R):
     ABCD matrix for a curved mirror with radius of curvature R.
     Concave mirrors have R<0, convex have R>0.
     """
-    return np.matrix([[1, 0], [2/float(R), 1]])
+    return np.matrix([[1, 0], [2/R, 1]])
 
 
 # ########################
