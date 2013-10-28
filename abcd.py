@@ -29,6 +29,7 @@ def wR2q(w, R):
     """
     return 1/(1/R - 1j * lam / (pi * w**2))
     
+    
 def w02q(w0):
     """
     q = w02q(w0)
@@ -36,6 +37,7 @@ def w02q(w0):
     Get the q-parameter at a waist point from the waist size.
     """
     return 1j * pi * w0**2 / lam
+
 
 def q2w(q):
     """
@@ -45,13 +47,24 @@ def q2w(q):
     """
     return np.sqrt(-lam / (pi * np.imag(1 / q)))
 
+
 def q2w0(q):
     """
     w0 = q2w0(q)
     ------------
     Get the waist size from a given q-parameter.
     """
-    return np.sqrt(np.imag(q) * lam / q)
+    return np.sqrt(np.imag(q) * lam / pi)
+    
+    
+def q2div(q):
+    """
+    div = q2div(q)
+    --------------
+    Get the far-field beam divergence for a given q-parameter.
+    """
+    return lam / (pi * q2w0(q))
+    
     
 def qABCD(q, M):
     """
@@ -62,6 +75,7 @@ def qABCD(q, M):
     M = np.array(M)
     return (M[0, 0] * q + M[0, 1]) / (M[1, 0] * q + M[1, 1])
     
+    
 def qreverse(q):
     """
     q1 = qreverse(q)
@@ -69,6 +83,7 @@ def qreverse(q):
     q-parameter transformation when changing propagation direction.
     """
     return -conj(q)
+    
     
 def qpropagate(zini, qini, elements, z):
     """
@@ -122,7 +137,8 @@ def Mprop(d):
     """
     return np.matrix([[1, d], [0, 1]])
 
-def Minterface(n0, n1, R='inf'):
+
+def Minterface(n0, n1, R=np.inf):
     """
     M = Minterface(n0, n1, R='inf')
     ----------------------
@@ -133,6 +149,7 @@ def Minterface(n0, n1, R='inf'):
     """
     return np.matrix([[1, 0], [(n0-n1)/(R*n1), n0/n1]])
 
+
 def Mlens(f):
     """
     M = Mlens(f)
@@ -140,6 +157,7 @@ def Mlens(f):
     ABCD matrix for a thin lens of focal length f.
     """
     return np.matrix([[1, 0], [-1/f, 1]])
+    
     
 def Mmirror(R):
     """
