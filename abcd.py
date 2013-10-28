@@ -51,6 +51,16 @@ def q2w(q, n=1):
     return np.sqrt(-lam/n / (pi * np.imag(1 / q)))
 
 
+def q2R(q):
+    """
+    w = q2R(q, n=1)
+    ----------
+    Get the beam radius of curvature from a given q-parameter.
+    n is the medium's refractive index.
+    """
+    return 1/ np.real(1 / q)
+    
+
 def q2w0(q, n=1):
     """
     w0 = q2w0(q, n=1)
