@@ -9,9 +9,10 @@ Tools for calculation of Gaussian beam propagation using ABCD matrix formalism.
 All lengths are in units of mm.
 """
 
+from __future__ import division
 import numpy as np
 from numpy import pi, conj
-from __future__ import division
+
 
 # set wavelength to 860 nm
 lam = 0.000860
