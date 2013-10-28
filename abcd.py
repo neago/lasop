@@ -61,7 +61,7 @@ def q2w0(q, n=1):
     return np.sqrt(np.imag(q) * lam/n / pi)
     
     
-def q2div(q):
+def q2div(q, n=1):
     """
     div = q2div(q, n=1)
     --------------
