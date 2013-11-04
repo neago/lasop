@@ -21,7 +21,7 @@ lam = 0.000860
 # q-parameter formulas
 #
 
-def wR2q(w, R):
+def wR2q(w, R, n=1):
     """
     q = wR2q(w, R, n=1)
     --------------
