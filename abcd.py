@@ -49,7 +49,7 @@ def q2w0(q):
     ------------
     Get the waist size from a given q-parameter.
     """
-    return np.sqrt(np.imag(q) * lam / q)
+    return np.sqrt(np.imag(q) * lam / pi)
     
 def qABCD(q, M):
     """
