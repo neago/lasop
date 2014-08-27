@@ -128,7 +128,7 @@ def Minterface(n0, n1, R='inf'):
     from a medium with refractive index n0 to a medium with refractive index n1.
     If no R is given, R=infinite i.e. flat surface is assumed.
     """
-    return np.array([[1, 0], [0, float(n0)/float(n1)]])
+    return np.array([[1, 0], [(float(n0) - float(n1))/(R*float(n1)), float(n0)/float(n1)]])
 
 def Mlens(f):
     """
