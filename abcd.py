@@ -19,37 +19,65 @@ lam = 0.000860
 # q-parameter formulas
 #
 
-def wR2q(w, R):
+def wR2q(w, R, n=1):
     """
-    q = wR2q(w, R)
+    q = wR2q(w, R, n=1)
     --------------
     Get the q-parameter from a given spot size and radius of curvature.
+    n is the medium's refractive index.
     """
-    return 1/(1/R - 1j * lam / (pi * w**2))
+    return 1/(1/R - 1j * lam/n / (pi * w**2))
     
-def w02q(w0):
+    
+def w02q(w0, n=1):
     """
-    q = w02q(w0)
+    q = w02q(w0, n=1)
     ------------
     Get the q-parameter at a waist point from the waist size.
+    n is the medium's refractive index.
     """
-    return 1j * pi * w0**2 / lam
+    return 1j * pi * w0**2 / (lam/n)
 
-def q2w(q):
+
+def q2w(q, n=1):
     """
-    w = q2w(q)
+    w = q2w(q, n=1)
     ----------
     Get the spot size from a given q-parameter.
+    n is the medium's refractive index.
     """
-    return np.sqrt(-lam / (pi * np.imag(1 / q)))
+    return np.sqrt(-lam/n / (pi * np.imag(1 / q)))
 
-def q2w0(q):
+
+def q2R(q):
     """
-    w0 = q2w0(q)
+    w = q2R(q, n=1)
+    ----------
+    Get the beam radius of curvature from a given q-parameter.
+    n is the medium's refractive index.
+    """
+    return 1/ np.real(1 / q)
+    
+
+def q2w0(q, n=1):
+    """
+    w0 = q2w0(q, n=1)
     ------------
     Get the waist size from a given q-parameter.
+    n is the medium's refractive index.
     """
-    return np.sqrt(np.imag(q) * lam / pi)
+    return np.sqrt(np.imag(q) * lam/n / pi)
+    
+    
+def q2div(q, n=1):
+    """
+    div = q2div(q, n=1)
+    --------------
+    Get the far-field beam divergence for a given q-parameter.
+    n is the medium's refractive index.
+    """
+    return lam/n / (pi * q2w0(q))
+    
     
 def qABCD(q, M):
     """
@@ -60,6 +88,7 @@ def qABCD(q, M):
     M = np.array(M)
     return (M[0, 0] * q + M[0, 1]) / (M[1, 0] * q + M[1, 1])
     
+    
 def qreverse(q):
     """
     q1 = qreverse(q)
@@ -67,6 +96,7 @@ def qreverse(q):
     q-parameter transformation when changing propagation direction.
     """
     return -conj(q)
+    
     
 def qpropagate(zini, qini, elements, z):
     """
@@ -118,17 +148,20 @@ def Mprop(d):
     ------------
     ABCD matrix for free space propagation of distance d.
     """
-    return np.array([[1, float(d)], [0, 1]])
+    return np.matrix([[1, d], [0, 1]])
 
-def Minterface(n0, n1, R='inf'):
+
+def Minterface(n0, n1, R=np.inf):
     """
     M = Minterface(n0, n1, R='inf')
     ----------------------
     ABCD matrix for the refraction at an interface (with radius of curvature R) 
     from a medium with refractive index n0 to a medium with refractive index n1.
     If no R is given, R=infinite i.e. flat surface is assumed.
+    R>0 means convex interface.
     """
-    return np.array([[1, 0], [(float(n0) - float(n1))/(R*float(n1)), float(n0)/float(n1)]])
+    return np.matrix([[1, 0], [(n0-n1)/(R*n1), n0/n1]])
+
 
 def Mlens(f):
     """
@@ -136,7 +169,8 @@ def Mlens(f):
     ------------
     ABCD matrix for a thin lens of focal length f.
     """
-    return np.array([[1, 0], [-1/float(f), 1]])
+    return np.matrix([[1, 0], [-1/f, 1]])
+    
     
 def Mmirror(R):
     """
@@ -145,7 +179,7 @@ def Mmirror(R):
     ABCD matrix for a curved mirror with radius of curvature R.
     Concave mirrors have R<0, convex have R>0.
     """
-    return np.array([[1, 0], [2/float(R), 1]])
+    return np.matrix([[1, 0], [2/R, 1]])
 
 
 # ########################
