@@ -13,7 +13,7 @@ class Cavitymode:
 
 
 class BowtieOPO:
-    def __init__(self, Lc, L1, L2, R1, R2=inf, folding_angle=5, nc=1.8, fixed_folding_angle=True):
+    def __init__(self, Lc, L1, L2, R1, R2=inf, folding_angle=5, nc=1.8, fixed_first='L', fixed_second='angle'):
         self.Lc = Lc
         self.L1 = L1
         self.L2 = L2
@@ -21,7 +21,8 @@ class BowtieOPO:
         self.R2 = R2
         self.folding_angle = folding_angle
         self.nc = nc
-        self.fixed_folding_angle = fixed_folding_angle
+        self.fixed_first = fixed_first
+        self.fixed_second = fixed_second
 
         self.update_geometry()
 
@@ -60,7 +61,45 @@ class BowtieOPO:
     def folding_angle(self):
         return self._folding_angle
 
-    def update_geometry(self):
+    def update_geometry(self, update_parameter):
+        if update_parameter in ('L', 'L2', 'bow_width', 'folding_angle'):
+            fixed = (update_parameter, self.fixed_first)
+        else:
+            fixed = (self.fixed_first, self.fixed_second)
+
+        if 'L' in fixed:
+            L_ = self.L - (self.nc - 1) * self.Lc
+
+        if 'L2' in fixed:
+            d = (self.L1 + self.L2) / 2
+
+        if 'L' in fixed:
+            if 'L2' in fixed:
+                self.L12 = L_ / 2 - d / 2
+                self.folding_angle = np.arccos(d / self.L12)
+                self.bow_width = d * np.tan(self.folding_angle)
+            elif 'bow_width' in fixed:
+                self.L12 = L_ / 4 + self.bow_width**2 / L_
+                self.folding_angle = np.arcsin(self.bow_width / self.L12)
+                self.L2 = 2 * self.L12 * np.cos(self.folding_angle) - self.L1
+            elif 'folding_angle' in fixed:
+                self.L12 = L_ / (2 * np.cos(self.folding_angle) + 2)
+                self.bow_width = self.L12 * np.sin(self.folding_angle)
+                self.L2 = 2 * self.L12 * np.cos(self.folding_angle) - self.L1
+        else:
+            if 'L2' in fixed and 'bow_width' in fixed:
+                self.L12 = np.sqrt(self.bow_width**2 + d**2)
+                self.folding_angle = np.arccos(d / self.L12)
+            elif 'L2' in fixed and 'folding_angle' in fixed:
+                self.L12 = d / np.cos(self.folding_angle)
+                self.bow_width = d * np.tan(self.folding_angle)
+            elif 'bow_width' in fixed and 'folding_angle' in fixed:
+                self.L12 = self.bow_width / np.sin(self.folding_angle)
+                self.L2 = 2 * self.L12 * np.cos(self.folding_angle) - self.L1
+            self.L = 2 * (d + self.L12) + (self.nc - 1) * self.Lc
+
+
+
         if self.fixed_folding_angle:
             self.width_bowtie =
 
@@ -71,6 +110,9 @@ class BowtieOPO:
         d = (self.L1 + self.L2) / 2
         self._L12 = np.sqrt(self.width_bowtie**2 + d**2)
         self.L =
+
+    def _fix_L_L2(self):
+
 
     def set_geometry(self, Lc, L1, L2, w_bowtie, R1, R2=inf):
         L12 = sqrt(w_bowtie**2 + ((L1 + L2) / 2)**2)
