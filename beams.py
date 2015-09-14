@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This temporary script file is located here:
-/home/jsne/.spyder2/.temp.py
-"""
 from pylab import *
 from optics import abcd
 
@@ -23,7 +16,7 @@ class Beam():
         plot(z, self.width(z))
 
 
-class Element():
+class Element:
 
 
 class System():
