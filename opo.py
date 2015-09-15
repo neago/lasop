@@ -13,6 +13,9 @@ class Cavitymode:
 
 
 class BowtieOPO:
+    """
+    Implements bowtie geometry.
+    """
     def __init__(self, Lc, L1, L2, R1, R2=np.inf, folding_angle=5*np.pi/180, nc=1.8,
                  fixed_first='L2', fixed_second='folding_angle'):
         self._Lc = Lc
@@ -26,6 +29,7 @@ class BowtieOPO:
         self.fixed_second = fixed_second
 
         self.update_geometry()
+        self.update_mode()
 
 
     @property
@@ -47,6 +51,15 @@ class BowtieOPO:
         self.update_geometry('L')
 
     @property
+    def L1(self):
+        return self._L1
+
+    @L1.setter
+    def L1(self, L1):
+        self._L1 = L1
+        self.update_geometry('L1')
+
+    @property
     def L2(self):
         return self._L2
 
@@ -56,13 +69,22 @@ class BowtieOPO:
         self.update_geometry('L2')
 
     @property
-    def L1(self):
-        return self._L1
+    def R1(self):
+        return self._R1
 
-    @L1.setter
-    def L1(self, L1):
-        self._L1 = L1
-        self.update_geometry('L1')
+    @R1.setter
+    def R1(self, R1):
+        self._R1 = R1
+        self.update_geometry('R1')
+
+    @property
+    def R2(self):
+        return self._R2
+
+    @R2.setter
+    def R2(self, R2):
+        self._R2 = R2
+        self.update_geometry('R2')
 
     @property
     def folding_angle(self):
@@ -101,18 +123,17 @@ class BowtieOPO:
         else:
             fixed = (self.fixed_first, self.fixed_second)
 
-
         if 'L' in fixed:
             L_ = self.L - (self.nc - 1) * self.Lc
             if 'L2' in fixed:
                 d = (self.L1 + self.L2) / 2
-                self._L12 = L_ / 2 - d / 2
+                self._L12 = L_ / 2 - d
                 self._folding_angle = np.arccos(d / self._L12)
                 self._bow_width = d * np.tan(self.folding_angle)
             elif 'bow_width' in fixed:
                 self._L12 = L_ / 4 + self.bow_width**2 / L_
                 self._folding_angle = np.arcsin(self.bow_width / self._L12)
-                self._L2 = 2 * self.L12 * np.cos(self.folding_angle) - self.L1
+                self._L2 = 2 * self._L12 * np.cos(self.folding_angle) - self.L1
             elif 'folding_angle' in fixed:
                 self._L12 = L_ / (2 * np.cos(self.folding_angle) + 2)
                 self._bow_width = self._L12 * np.sin(self.folding_angle)
@@ -123,7 +144,6 @@ class BowtieOPO:
                 self._L12 = np.sqrt(self.bow_width**2 + d**2)
                 self._folding_angle = np.arccos(d / self._L12)
             elif 'L2' in fixed and 'folding_angle' in fixed:
-                print('ok')
                 d = (self.L1 + self.L2) / 2
                 self._L12 = d / np.cos(self.folding_angle)
                 self._bow_width = d * np.tan(self.folding_angle)
@@ -133,22 +153,38 @@ class BowtieOPO:
             self._L = self.L1 + self.L2 + 2 * self._L12 + (self.nc - 1) * self.Lc
 
 
+    def update_mode(self):
+        elements_z = [self.Lc / 2,
+                      self.L1 / 2,
+                      self.L1 / 2 + self._L12,
+                      self.L1 / 2 + self._L12 + self.L2,
+                      self.L1 / 2 + 2 * self._L12 + self.L2,
+                      self.L1 / 2 + 2 * self._L12 + self.L2 + self.Lc / 2]
+        elements_M_horz = [abcd.Minterface(self.nc, 1),
+                           abcd.Mmirror(-self.R1 * np.cos(self.folding_angle)),
+                           abcd.Mmirror(-self.R2 * np.cos(self.folding_angle)),
+                           abcd.Mmirror(-self.R2 * np.cos(self.folding_angle)),
+                           abcd.Mmirror(-self.R1 * np.cos(self.folding_angle)),
+                           abcd.Minterface(1, self.nc)]
+        self.elements_horz = zip(elements_z, elements_M_horz)
+        #self.M_horz =
 
-        #
-        #
-        # self.M = ( *
-        #           abcd.Minterface(1, n) *
-        #           abcd.Mprop((d-l)/2) *
-        #           abcd.Mmirror(-R) *
-        #           abcd.Mprop(L12) abcd.qpropagate()
-        #           abcd.Mmirror(-R2) *
-        #           abcd.Mprop(L2) *
-        #           abcd.Mmirror(-R2) *
-        #           abcd.Mprop(L12) *
-        #           abcd.Mmirror(-R1) *
-        #           abcd.Mprop((L1 - Lc) / 2) *
-        #           abcd.Minterface(n, 1) *
-        #           abcd.Mprop(Lc / 2))
+
+            #
+            #
+            # self.M = ( *
+            #           abcd.Minterface(1, n) *
+            #           abcd.Mprop((d-l)/2) *
+            #           abcd.Mmirror(-R) *
+            #           abcd.Mprop(L12) abcd.qpropagate()
+            #           abcd.Mmirror(-R2) *
+            #           abcd.Mprop(L2) *
+            #           abcd.Mmrror(-R2) *
+            #           abcd.Mprop(L12) *
+            #           abcd.Mmirror(-R1) *
+            #           abcd.Mprop((L1 - Lc) / 2) *
+            #           abcd.Minterface(n, 1) *
+            #           abcd.Mprop(Lc / 2))
 
 
 
