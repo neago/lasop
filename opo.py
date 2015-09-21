@@ -237,11 +237,12 @@ class BowtieOPO:
     def mode_width_at(self, z, dir='h'):
         """
         Get mode radius at arbitrary location.
-        Note: this function does not yet take into account the crystal
-        refractive index.
         """
         q = abcd.qpropagate(0, self.q0[dir], self.elements[dir], z)
-        return abcd.q2w(q)
+        if -self.Lc / 2 <= z < self.Lc / 2:
+            return abcd.q2w(q, self.nc)
+        else:
+            return abcd.q2w(q)
 
         #self.M_horz =
 
