@@ -193,12 +193,15 @@ class BowtieOPO:
         return elements, M, q0
 
     def mode_waist(self, dir='h', waist=1):
-        if waist == 1:
-            return abcd.q2w(self.q0[dir], self.nc)
+        if self.q0[dir]:
+            if waist == 1:
+                return abcd.q2w(self.q0[dir], self.nc)
+            else:
+                q = abcd.qpropagate(0, self.q0[dir], self.elements[dir],
+                                    self.L1 / 2 + self._L12 + self.L2 / 2)
+                return abcd.q2w(q)
         else:
-            q = abcd.qpropagate(0, self.q0[dir], self.elements[dir],
-                                self.L1 / 2 + self._L12 + self.L2 / 2)
-            return abcd.q2w(q)
+            return np.nan
 
     def mode_width_at(self, z, dir='h'):
         """
@@ -209,6 +212,26 @@ class BowtieOPO:
             return abcd.q2w(q, self.nc)
         else:
             return abcd.q2w(q)
+
+    def eccentricity(self, waist=1):
+        a = self.mode_waist('h', waist)
+        b = self.mode_waist('v', waist)
+        if b > a:
+            a, b = b, a
+        return np.sqrt(1 - b**2 / a**2)
+
+    def match_to_circular(self):
+        """
+        Coupling efficiency to a circular mode beam.
+        """
+        w0h = self.mode_waist('h', 2)
+        w0v = self.mode_waist('v', 2)
+        w0avg = (w0h + w0v) / 2
+        coupling = (4 * w0avg**2 * w0h * w0v /
+                    (w0h**2 + w0avg**2) / (w0v**2 + w0avg**2))
+        return coupling
+
+
 
     def FSR(self):
         return 2.9979e8 / (.001 * self.L)
