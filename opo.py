@@ -16,7 +16,8 @@ class BowtieOPO:
     """
     Implements bowtie geometry.
     """
-    def __init__(self, Lc, L1, L, R1, R2=np.inf, folding_angle=5*np.pi/180, nc=1.8,
+    def __init__(self, Lc, L1, L, R1, R2=np.inf, folding_angle=5*np.pi/180,
+                 nc=1.8, coupling=0.1, loss=.005,
                  fixed_first='L', fixed_second='folding_angle'):
         self._Lc = Lc
         self._L1 = L1
@@ -25,6 +26,8 @@ class BowtieOPO:
         self._R2 = R2
         self._folding_angle = folding_angle
         self._nc = nc
+        self.coupling = coupling
+        self.loss = loss
         self.fixed_first = fixed_first
         self.fixed_second = fixed_second
 
@@ -156,43 +159,6 @@ class BowtieOPO:
             for d, v in zip([self.elements, self.M, self.q0], self.get_abcd(dir)):
                 d[dir] = v
 
-    def update_abcd_old(self):
-        elements_z = [self.Lc / 2,
-                      self.L1 / 2,
-                      self.L1 / 2 + self._L12,
-                      self.L1 / 2 + self._L12 + self.L2,
-                      self.L1 / 2 + 2 * self._L12 + self.L2,
-                      self.L1 / 2 + 2 * self._L12 + self.L2 + self.Lc / 2]
-        elements_M_horz = [abcd.Minterface(self.nc, 1),
-                           abcd.Mmirror(-self.R1 * np.cos(self.folding_angle)),
-                           abcd.Mmirror(-self.R2 * np.cos(self.folding_angle)),
-                           abcd.Mmirror(-self.R2 * np.cos(self.folding_angle)),
-                           abcd.Mmirror(-self.R1 * np.cos(self.folding_angle)),
-                           abcd.Minterface(1, self.nc)]
-        elements_M_vert = [abcd.Minterface(self.nc, 1),
-                           abcd.Mmirror(-self.R1 / np.cos(self.folding_angle)),
-                           abcd.Mmirror(-self.R2 / np.cos(self.folding_angle)),
-                           abcd.Mmirror(-self.R2 / np.cos(self.folding_angle)),
-                           abcd.Mmirror(-self.R1 / np.cos(self.folding_angle)),
-                           abcd.Minterface(1, self.nc)]
-        elements_horz = zip(elements_z, elements_M_horz)
-        elements_vert = zip(elements_z, elements_M_vert)
-
-        M_horz = np.asmatrix(np.identity(2))
-        M_vert = np.asmatrix(np.identity(2))
-        lastpos = 0
-        for eh, ev in zip(elements_horz, elements_vert):
-            M_horz = eh[1] * abcd.Mprop(eh[0] - lastpos) * M_horz
-            M_vert = ev[1] * abcd.Mprop(ev[0] - lastpos) * M_vert
-            lastpos = eh[0]
-        M_horz = abcd.Mprop(self.Lc / 2) * M_horz
-        M_vert = abcd.Mprop(self.Lc / 2) * M_vert
-
-        q0_horz = find_stable_mode(M_horz, True)
-        q0_vert = find_stable_mode(M_vert, True)
-
-        return ((elements_horz, M_horz, q0_horz), (elements_vert, M_vert, q0_vert))
-
     def get_abcd(self, dir='h'):
         if dir == 'h':
             R1 = self.R1 * np.cos(self.folding_angle)
@@ -243,6 +209,20 @@ class BowtieOPO:
             return abcd.q2w(q, self.nc)
         else:
             return abcd.q2w(q)
+
+    def FSR(self):
+        return 2.9979e8 / (.001 * self.L)
+
+    def finesse(self):
+        r = np.sqrt((1 - self.coupling) * (1 - self.loss))
+        return np.pi / 2 / np.arcsin((1 - r) / (2 * np.sqrt(r)))
+
+    def bandwidth(self):
+        """
+        FWHM bandwidth.
+        """
+        return self.FSR() / self.finesse()
+
 
         #self.M_horz =
 
