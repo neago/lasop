@@ -34,6 +34,13 @@ class BowtieOPO:
         self.elements, self.M, self.q0 = {}, {}, {}
         self.update_geometry()
 
+    def __str__(self):
+        s = 'Mode waist 1: {:} / {:}\n'.format(self.mode_waist('h'), self.mode_waist('v'))
+        s += 'Mode waist 2: {:} / {:}\n'.format(self.mode_waist('h', 2), self.mode_waist('v', 2))
+        s += 'Eccentricity / coupling to circular mode: {:} / {:}\n'.format(self.eccentricity(2), self.match_to_circular())
+        s += 'FSR / Finesse / FWHM: {:} / {:} / {:}'.format(self.FSR(), self.finesse(), self.bandwidth())
+        return s
+
 
     @property
     def Lc(self):

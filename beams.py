@@ -1,5 +1,5 @@
 from pylab import *
-from optics import abcd
+from lasop import abcd
 
 
 class Beam():
