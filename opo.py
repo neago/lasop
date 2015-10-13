@@ -214,6 +214,9 @@ class BowtieOPO:
         """
         Get mode radius at arbitrary location.
         """
+        if self.q0[dir] == None:
+            return np.nan
+
         q = abcd.qpropagate(0, self.q0[dir], self.elements[dir], z)
         if -self.Lc / 2 <= z < self.Lc / 2:
             return abcd.q2w(q, self.nc)
