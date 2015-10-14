@@ -1,5 +1,6 @@
 import numpy as np
 import abcd
+import matplotlib.pyplot as plt
 
 
 class OpticalElement:
@@ -17,7 +18,7 @@ class BowtieOPO:
     Implements bowtie geometry.
     """
     def __init__(self, Lc, L1, L, R1, R2=np.inf, folding_angle=5,
-                 nc=1.8, coupling=0.1, loss=.005,
+                 nc=1.82, coupling=0.1, loss=.002,
                  fixed_first='L', fixed_second='folding_angle'):
         self._Lc = Lc
         self._L1 = L1
@@ -241,6 +242,53 @@ class BowtieOPO:
                     (w0h**2 + w0avg**2) / (w0v**2 + w0avg**2))
         return coupling
 
+    def draw_geometry(self, mirror_diam=8, crystal_width=4):
+        fig, ax = plt.subplots(1, 1, figsize=(15,5))
+        cv = np.cos(self._folding_angle/2)
+        sv = np.sin(self._folding_angle/2)
+        cw = crystal_width
+        mt, md = 6, mirror_diam  # mirror thickness, diameter
+        m1x, m1y = (-self.L1/2, 0)
+        m2x, m2y = (self.L1/2, 0)
+        m3x, m3y = (-self.L2/2, -self.bow_width)
+        m4x, m4y = (self.L2/2, -self.bow_width)
+        elements = [plt.Rectangle((-self.Lc / 2, -2), self.Lc, cw),
+                    plt.Rectangle((m1x - mt*cv - md/2*sv, m1y + mt*sv - md/2*cv), mt, md, -self.folding_angle/2),
+                    plt.Rectangle((m2x + md/2*sv, m2y - md/2*cv), mt, md, self.folding_angle/2),
+                    plt.Rectangle((m3x - mt*cv + md/2*sv, m3y - mt*sv - md/2*cv), mt, md, self.folding_angle/2),
+                    plt.Rectangle((m4x - md/2*sv, m4y - md/2*cv), mt, md, -self.folding_angle/2)]
+                    #plt.Polygon([(m1x, m1y), (m2x, m2y), (m3x, m3y), (m4x, m4y)], edgecolor='k', fill=None, lw=1, alpha=.5)]
+        for e in elements:
+            ax.add_patch(e)
+
+        x1 = np.linspace(m1x, m2x, 200)
+        x2 = np.linspace(m3x, m4x + 20, 200)
+        x3 = np.linspace(0, self._L12, 200)
+        w01 = self.mode_waist('h', 1)
+        w02 = self.mode_waist('h', 2)
+        w1 = w01 * np.sqrt(1 + (abcd.lam * x1 / (np.pi * w01**2))**2)
+        w2 = w02 * np.sqrt(1 + (abcd.lam * x2 / (np.pi * w02**2))**2)
+        w3 = w02 * np.sqrt(1 + (abcd.lam * (x3 + self.L2/2) / (np.pi * w02**2))**2)
+
+        rotmat = lambda v: np.array([[np.cos(v), -np.sin(v)],
+                                     [np.sin(v), np.cos(v)]])
+        upper1 = np.array([[m3x], [m3y]]) + np.dot(rotmat(self._folding_angle), np.c_[x3, 2*w3].T)
+        lower1 = np.array([[m3x], [m3y]]) + np.dot(rotmat(self._folding_angle), np.c_[x3, -2*w3].T)
+        upper2 = np.array([[m4x], [m4y]]) + np.dot(rotmat(np.pi - self._folding_angle), np.c_[x3, 2*w3].T)
+        lower2 = np.array([[m4x], [m4y]]) + np.dot(rotmat(np.pi - self._folding_angle), np.c_[x3, -2*w3].T)
+
+        ax.add_patch(plt.Polygon(np.c_[upper1, np.fliplr(lower1)].T, lw=0, facecolor='r', alpha=.5))
+        ax.add_patch(plt.Polygon(np.c_[upper2, np.fliplr(lower2)].T, lw=0, facecolor='r', alpha=.5))
+
+
+        ax.fill_between(x1, m1y + 2*w1, m1y - 2*w1, lw=0, facecolor='r', alpha=.5)
+        ax.fill_between(x1, m1y + w1, m1y - w1, lw=0, facecolor='r', alpha=.5)
+        ax.fill_between(x2, m3y + 2*w2, m3y - 2*w2, lw=0, facecolor='r', alpha=.5)
+        ax.fill_between(x2, m3y + w2, m3y - w2, lw=0, facecolor='r', alpha=.5)
+
+        plt.axis('scaled')
+
+        #return fig, ax
 
 
     def FSR(self):
@@ -255,6 +303,9 @@ class BowtieOPO:
         FWHM bandwidth.
         """
         return self.FSR() / self.finesse()
+
+    def escape_efficiency(self):
+        return self.coupling / (self.coupling + self.loss)
 
 
         #self.M_horz =
