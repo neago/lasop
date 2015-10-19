@@ -252,7 +252,7 @@ class BowtieOPO:
         m2x, m2y = (self.L1/2, 0)
         m3x, m3y = (-self.L2/2, -self.bow_width)
         m4x, m4y = (self.L2/2, -self.bow_width)
-        elements = [plt.Rectangle((-self.Lc / 2, -2), self.Lc, cw),
+        elements = [plt.Rectangle((-self.Lc / 2, -cw/2), self.Lc, cw),
                     plt.Rectangle((m1x - mt*cv - md/2*sv, m1y + mt*sv - md/2*cv), mt, md, -self.folding_angle/2),
                     plt.Rectangle((m2x + md/2*sv, m2y - md/2*cv), mt, md, self.folding_angle/2),
                     plt.Rectangle((m3x - mt*cv + md/2*sv, m3y - mt*sv - md/2*cv), mt, md, self.folding_angle/2),
