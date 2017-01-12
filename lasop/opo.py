@@ -1,5 +1,5 @@
 import numpy as np
-import abcd
+from . import abcd
 import matplotlib.pyplot as plt
 
 
