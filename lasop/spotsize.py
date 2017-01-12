@@ -28,7 +28,7 @@ def select_file(datadir, manual_choice=False):
 #        for i in range(len(filelist)):
 #            print '[', str(i), '] ', os.path.basename(filelist[i])
         indices = '[0 - ' + str(len(filelist)-1) + ']'
-        reply = raw_input('Please choose a file index ' + indices
+        reply = input('Please choose a file index ' + indices
                           + ' (q to skip): ')
         if reply == 'q':
             return None
@@ -99,30 +99,32 @@ def plot_fit(x, y, fitfunc, fitparam):
     pylab.title('{0:.3g}'.format(fitted_w), fontsize = 42)
 
 
-RULER_WIDTH = 12.7
-datadir = raw_input('Directory? ')
-    
-while True:
-    fn = select_file(datadir, True)
-    if fn:
-        x, y = read_lcascii(fn)
-        input_params = raw_input('Manually input parameters? ' +
-                                 '(Enter to use defaults): ')
-        if input_params:
-            test_params = raw_input('Input comma-separated values:\n' +
-                                    '0-level, ampl., left edge offset, w, ' +
-                                    'ruler width\n')
-            test_params = [float(p) for p in test_params.split(',')]
-        else:
-            test_params = None
-            
-        fitfunc, fitparam, fitted_w = fit(x, y, test_params)
-        plot_fit(x, y, fitfunc, fitparam)
-        print(os.path.basename(fn) + ': ' + '{0:.4g}'.format(fitted_w) + ' mm')
-    
-    stopnow = raw_input('Press Enter for new file, q to quit: ')
-    if stopnow == 'q':
-        break
+if __name__=='__main__':
+
+    RULER_WIDTH = 12.7
+    datadir = input('Directory? ')
+        
+    while True:
+        fn = select_file(datadir, True)
+        if fn:
+            x, y = read_lcascii(fn)
+            input_params = input('Manually input parameters? ' +
+                                     '(Enter to use defaults): ')
+            if input_params:
+                test_params = input('Input comma-separated values:\n' +
+                                        '0-level, ampl., left edge offset, w, ' +
+                                        'ruler width\n')
+                test_params = [float(p) for p in test_params.split(',')]
+            else:
+                test_params = None
+                
+            fitfunc, fitparam, fitted_w = fit(x, y, test_params)
+            plot_fit(x, y, fitfunc, fitparam)
+            print((os.path.basename(fn) + ': ' + '{0:.4g}'.format(fitted_w) + ' mm'))
+        
+        stopnow = input('Press Enter for new file, q to quit: ')
+        if stopnow == 'q':
+            break
 
 
 
