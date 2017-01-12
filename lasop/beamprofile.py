@@ -47,7 +47,7 @@ def fit(x, y, p0=None):
     fitparam, success = leastsq(errfunc, p0[:], args=(x, y))
     
     if not success:
-        print 'Fit error'
+        print('Fit error')
         return
     return fitfunc, fitparam
 
@@ -58,8 +58,8 @@ if __name__ == "__main__":
     filelist = [os.path.join(datadir, fn) for fn in os.listdir(datadir)]
     
     for file in filelist:
-        print filelist.index(file), '\t', file
-    fi = input('Which file? ')
+        print(filelist.index(file), '\t', file)
+    fi = eval(input('Which file? '))
         
     x, y = ssfileparse(filelist[fi])
     func, param = fit(x, y, [.1,100])
@@ -71,4 +71,4 @@ if __name__ == "__main__":
     ptpoints = 50
     px = arange(pxmin - pxrange/10., pxmax + pxrange/10., 1.2*pxrange/ptpoints)
     plt.plot(px, func(param, px), 'r-')
-    print "w_0 = %.4f mm;  z_0 = %.1f mm" % tuple(param)
+    print("w_0 = %.4f mm;  z_0 = %.1f mm" % tuple(param))
