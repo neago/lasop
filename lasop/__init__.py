@@ -1,4 +1,4 @@
-import abcd
-import beamprofile
-import opo
-import spotsize
+from . import abcd
+from . import beamprofile
+from . import opo
+from . import spotsize
